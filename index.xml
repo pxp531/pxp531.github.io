@@ -13,7 +13,7 @@
       <link>https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/</link>
       <pubDate>Sun, 01 Sep 2024 16:36:54 +0800</pubDate>
       <guid>https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/</guid>
-      <description>perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&amp;gt; ftrace -&amp;gt; kprobe -&amp;gt; eBPF来展开，这篇以perf基础使用开头</description>
+      <description>perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&amp;gt; ftrace -&amp;gt; kprobe -&amp;gt; eBPF来展开，这篇以perf基础使用开头&#xA;常用命令 perf list [列出事件类型，如硬件事件、软件事件等]&#xA;perf record [运行一个命令并把它的剖析记录到perf.data中]&#xA;perf report [读perf.data并显示剖析] perf script [读perf.data并显示跟踪输出] perf stat [收集性能计数器统计信息]&#xA;perf trace [实时跟踪]&#xA;perf probe [定义新的动态tracepoint]&#xA;列出事件 perf list：列出所有事件&#xA;perf list &amp;lsquo;sched:*&amp;rsquo;：列出sched tracepoint&#xA;perf list block：列出所有名称中带有字符串block的事件&#xA;-这个看起来是匹配，和第二个有啥区别&#xA;perf probe -l：列出当前可用的动态查看器&#xA;计数事件 perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒 record perf record -p PID -F 99 -a -g sleep 10 主要参数 p PID是目标进程 F 99是采样频率 a 是所有CPU g 是栈指针 sleep 10是持续10秒 其他参数 &amp;ndash;cgroup=docker/xxx tracepoint tracepoint是内核预留的hook点，那么说明这个点数量不会多</description>
     </item>
     <item>
       <title>初识eBPF</title>

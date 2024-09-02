@@ -58,7 +58,18 @@
   
   
   
-  <meta name="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头" />
+  <meta name="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头
+常用命令 perf list [列出事件类型，如硬件事件、软件事件等]
+perf record [运行一个命令并把它的剖析记录到perf.data中]
+perf report [读perf.data并显示剖析] perf script [读perf.data并显示跟踪输出] perf stat [收集性能计数器统计信息]
+perf trace [实时跟踪]
+perf probe [定义新的动态tracepoint]
+列出事件 perf list：列出所有事件
+perf list &lsquo;sched:*&rsquo;：列出sched tracepoint
+perf list block：列出所有名称中带有字符串block的事件
+-这个看起来是匹配，和第二个有啥区别
+perf probe -l：列出当前可用的动态查看器
+计数事件 perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒 record perf record -p PID -F 99 -a -g sleep 10 主要参数 p PID是目标进程 F 99是采样频率 a 是所有CPU g 是栈指针 sleep 10是持续10秒 其他参数 &ndash;cgroup=docker/xxx tracepoint tracepoint是内核预留的hook点，那么说明这个点数量不会多" />
   <meta name="author" content="pxxp" />
   
 
@@ -127,15 +138,37 @@
   
   
   <meta itemprop="name" content="perf基础使用">
-  <meta itemprop="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
+  <meta itemprop="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头
+常用命令 perf list [列出事件类型，如硬件事件、软件事件等]
+perf record [运行一个命令并把它的剖析记录到perf.data中]
+perf report [读perf.data并显示剖析] perf script [读perf.data并显示跟踪输出] perf stat [收集性能计数器统计信息]
+perf trace [实时跟踪]
+perf probe [定义新的动态tracepoint]
+列出事件 perf list：列出所有事件
+perf list ‘sched:*’：列出sched tracepoint
+perf list block：列出所有名称中带有字符串block的事件
+-这个看起来是匹配，和第二个有啥区别
+perf probe -l：列出当前可用的动态查看器
+计数事件 perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒 record perf record -p PID -F 99 -a -g sleep 10 主要参数 p PID是目标进程 F 99是采样频率 a 是所有CPU g 是栈指针 sleep 10是持续10秒 其他参数 –cgroup=docker/xxx tracepoint tracepoint是内核预留的hook点，那么说明这个点数量不会多">
   <meta itemprop="datePublished" content="2024-09-01T16:36:54+08:00">
   <meta itemprop="dateModified" content="2024-09-01T16:36:54+08:00">
-  <meta itemprop="wordCount" content="9">
+  <meta itemprop="wordCount" content="119">
   
   <meta property="og:url" content="https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
   <meta property="og:site_name" content="pxxp">
   <meta property="og:title" content="perf基础使用">
-  <meta property="og:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
+  <meta property="og:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头
+常用命令 perf list [列出事件类型，如硬件事件、软件事件等]
+perf record [运行一个命令并把它的剖析记录到perf.data中]
+perf report [读perf.data并显示剖析] perf script [读perf.data并显示跟踪输出] perf stat [收集性能计数器统计信息]
+perf trace [实时跟踪]
+perf probe [定义新的动态tracepoint]
+列出事件 perf list：列出所有事件
+perf list ‘sched:*’：列出sched tracepoint
+perf list block：列出所有名称中带有字符串block的事件
+-这个看起来是匹配，和第二个有啥区别
+perf probe -l：列出当前可用的动态查看器
+计数事件 perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒 record perf record -p PID -F 99 -a -g sleep 10 主要参数 p PID是目标进程 F 99是采样频率 a 是所有CPU g 是栈指针 sleep 10是持续10秒 其他参数 –cgroup=docker/xxx tracepoint tracepoint是内核预留的hook点，那么说明这个点数量不会多">
   <meta property="og:locale" content="zh_cn">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -146,7 +179,18 @@
   
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="perf基础使用">
-  <meta name="twitter:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
+  <meta name="twitter:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头
+常用命令 perf list [列出事件类型，如硬件事件、软件事件等]
+perf record [运行一个命令并把它的剖析记录到perf.data中]
+perf report [读perf.data并显示剖析] perf script [读perf.data并显示跟踪输出] perf stat [收集性能计数器统计信息]
+perf trace [实时跟踪]
+perf probe [定义新的动态tracepoint]
+列出事件 perf list：列出所有事件
+perf list ‘sched:*’：列出sched tracepoint
+perf list block：列出所有名称中带有字符串block的事件
+-这个看起来是匹配，和第二个有啥区别
+perf probe -l：列出当前可用的动态查看器
+计数事件 perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒 record perf record -p PID -F 99 -a -g sleep 10 主要参数 p PID是目标进程 F 99是采样频率 a 是所有CPU g 是栈指针 sleep 10是持续10秒 其他参数 –cgroup=docker/xxx tracepoint tracepoint是内核预留的hook点，那么说明这个点数量不会多">
 
   
   
@@ -281,6 +325,118 @@
 
   <section><h2 id="perf基础使用">perf基础使用</h2>
 <p>| 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头</p>
+<h3 id="常用命令">常用命令</h3>
+<ul>
+<li>
+<p>perf list [列出事件类型，如硬件事件、软件事件等]</p>
+</li>
+<li>
+<p>perf record [运行一个命令并把它的剖析记录到perf.data中]</p>
+<ul>
+<li>perf report [读perf.data并显示剖析]</li>
+<li>perf script [读perf.data并显示跟踪输出]</li>
+</ul>
+</li>
+<li>
+<p>perf stat [收集性能计数器统计信息]</p>
+</li>
+<li>
+<p>perf trace [实时跟踪]</p>
+</li>
+<li>
+<p>perf probe [定义新的动态tracepoint]</p>
+</li>
+</ul>
+<h3 id="列出事件">列出事件</h3>
+<ul>
+<li>
+<p>perf list：列出所有事件</p>
+</li>
+<li>
+<p>perf list &lsquo;sched:*&rsquo;：列出sched tracepoint</p>
+</li>
+<li>
+<p>perf list block：列出所有名称中带有字符串block的事件</p>
+<p>-这个看起来是匹配，和第二个有啥区别</p>
+</li>
+<li>
+<p>perf probe -l：列出当前可用的动态查看器</p>
+</li>
+</ul>
+<h3 id="计数事件">计数事件</h3>
+<ul>
+<li>perf stat -a sleep 5：-a是统计所有cpu，sleep 5是持续5秒</li>
+</ul>
+<h3 id="record">record</h3>
+<ul>
+<li>perf record -p PID -F 99 -a -g sleep 10
+<ul>
+<li>主要参数
+<ul>
+<li>p PID是目标进程</li>
+<li>F 99是采样频率</li>
+<li>a 是所有CPU</li>
+<li>g 是栈指针</li>
+<li>sleep 10是持续10秒</li>
+</ul>
+</li>
+<li>其他参数
+<ul>
+<li>&ndash;cgroup=docker/xxx</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="tracepoint">tracepoint</h3>
+<ul>
+<li>
+<p>tracepoint是内核预留的hook点，那么说明这个点数量不会多</p>
+</li>
+<li>
+<p>静态跟踪</p>
+</li>
+<li>
+<p>perf record -e block:block_rq_issue &ndash;filter &lsquo;bytes &gt;= 1024&rsquo;</p>
+<ul>
+<li>这个&ndash;filter后面再研究一下</li>
+</ul>
+</li>
+</ul>
+<h3 id="probe">probe</h3>
+<ul>
+<li>
+<p>是对tracepoint的补充</p>
+</li>
+<li>
+<p>比如为内核函数tcp_sendmsg()添加探测：perf probe &ndash;add tcp_sendmsg()；删除把 &ndash;add换成 &ndash;del就可以了。</p>
+</li>
+<li>
+<p>上面是给内核函数添加，给用户态函数怎么添加呢？</p>
+<ul>
+<li>perf probe -x /lib/x86_84-linux-gnu/libc.so.6 &ndash;add fopen</li>
+<li>多一个 -x参数以及用户函数所在的文件</li>
+</ul>
+</li>
+</ul>
+<h3 id="report">report</h3>
+<ul>
+<li>perf record会生成一个perf.data，有两种方式解读，一个是perf.script，一个是perf report；</li>
+</ul>
+<h3 id="性能管控">性能管控</h3>
+<ul>
+<li>
+<p>这里指的是perf record命令，perf stat性能消耗比较小。</p>
+</li>
+<li>
+<p>如果监控write()这个系统调用，如果读写频率很高的话perf本身消耗也会很大，可以几方面调整。<strong>本身是做性能分析的工具，这个工具尽可能在消耗小和无侵入的前提下完成工作。</strong></p>
+<ul>
+<li>调整采样频率，默认是4000。-F 指定采样频率</li>
+<li>修改采样周期，-C</li>
+<li>设定perf程序CPU使用率：sysctl kernel.perf_cpu_time_max_percent</li>
+</ul>
+</li>
+</ul>
 </section>
 
   
