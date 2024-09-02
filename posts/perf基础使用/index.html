@@ -49,7 +49,7 @@
   />
 
   
-  <title>Posts - pxxp</title>
+  <title>perf基础使用 - pxxp</title>
 
   
   <meta name="theme-color" />
@@ -58,11 +58,7 @@
   
   
   
-  
-  <meta
-    name="description"
-    content="A personal blog"
-  />
+  <meta name="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头" />
   <meta name="author" content="pxxp" />
   
 
@@ -97,6 +93,12 @@
 
   
   
+  <script
+    defer
+    src="https://pxp531.github.io/highlight.min.js"
+    onload="hljs.initHighlightingOnLoad();"
+  ></script>
+  
 
   
   
@@ -124,33 +126,33 @@
 
   
   
-  <meta itemprop="name" content="Posts">
+  <meta itemprop="name" content="perf基础使用">
+  <meta itemprop="description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
   <meta itemprop="datePublished" content="2024-09-01T16:36:54+08:00">
   <meta itemprop="dateModified" content="2024-09-01T16:36:54+08:00">
+  <meta itemprop="wordCount" content="9">
   
-  <meta property="og:url" content="https://pxp531.github.io/posts/">
+  <meta property="og:url" content="https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
   <meta property="og:site_name" content="pxxp">
-  <meta property="og:title" content="Posts">
+  <meta property="og:title" content="perf基础使用">
+  <meta property="og:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
   <meta property="og:locale" content="zh_cn">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-01T16:36:54+08:00">
+    <meta property="article:modified_time" content="2024-09-01T16:36:54+08:00">
 
   
   
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Posts">
+  <meta name="twitter:title" content="perf基础使用">
+  <meta name="twitter:description" content="perf基础使用 | 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头">
 
   
   
-  <link
-    rel="alternate"
-    type="application/rss&#43;xml"
-    href="https://pxp531.github.io/posts/index.xml"
-    title="pxxp"
-  />
-  
 
   
-  <link rel="canonical" href="https://pxp531.github.io/posts/" />
+  <link rel="canonical" href="https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/" />
   
   
 </head>
@@ -261,44 +263,57 @@
     >
       
 
+<article>
+  <header class="mb-14">
+    <h1 class="!my-0 pb-2.5">perf基础使用</h1>
 
+    
+    <div class="text-xs antialiased opacity-60">
+      
+      <time>Sep 1, 2024</time>
+      
+      
+      
+      
+    </div>
+    
+  </header>
 
-
-
-
-
-
-
- 
-
-
-
-
-<section class="relative my-10 first-of-type:mt-0 last-of-type:mb-0">
-  
-  <h2 class="!my-0">perf基础使用</h2>
-  <time class="text-xs antialiased opacity-60"
-    >Sep 1, 2024</time
-  >
-  <a class="absolute inset-0 text-[0]" href="https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">perf基础使用</a>
+  <section><h2 id="perf基础使用">perf基础使用</h2>
+<p>| 书接上回《初识eBPF》，后面会按照perf -&gt; ftrace -&gt; kprobe -&gt; eBPF来展开，这篇以perf基础使用开头</p>
 </section>
 
-
-
-
-
-<section class="relative my-10 first-of-type:mt-0 last-of-type:mb-0">
   
-  <h2 class="!my-0">初识eBPF</h2>
-  <time class="text-xs antialiased opacity-60"
-    >Aug 30, 2024</time
+  
+
+  
+  
+  
+  
+  <nav
+    class="mt-24 flex overflow-hidden rounded-xl bg-black/[3%] text-lg !leading-[1.2] *:flex *:w-1/2 *:items-center *:p-5 *:font-medium *:no-underline dark:bg-white/[8%] [&>*:hover]:bg-black/[2%] dark:[&>*:hover]:bg-white/[3%]"
   >
-  <a class="absolute inset-0 text-[0]" href="https://pxp531.github.io/posts/%E5%88%9D%E8%AF%86ebpf/">初识eBPF</a>
-</section>
+    
+    
+    <a class="ltr:ml-auto rtl:mr-auto justify-end pl-3" href="https://pxp531.github.io/posts/%E5%88%9D%E8%AF%86ebpf/"
+      ><span>初识eBPF</span><span class="ltr:ml-1.5 rtl:mr-1.5">→</span></a
+    >
+    
+  </nav>
+  
+  
+
+  
+  
+
+  
+  
+
+  
 
 
-
-
+  
+</article>
 
 
     </main>
