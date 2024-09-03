@@ -6,8 +6,15 @@
     <description>Recent content in Posts on pxxp</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 01 Sep 2024 16:36:54 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 03 Sep 2024 21:09:59 +0800</lastBuildDate>
     <atom:link href="https://pxp531.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Perf原理01</title>
+      <link>https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8601/</link>
+      <pubDate>Tue, 03 Sep 2024 21:09:59 +0800</pubDate>
+      <guid>https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8601/</guid>
+      <description>| 看完前一节《perf基础使用》以后会对perf命令有些基础印象，现在这一章主要梳理一些概念，方便后续了解具体原理。&#xA;概念梳理 火焰图是perf record得到的perf.data文件再做perf.script得到的 perf是前端工具，我们用的命令行叫做perf perf_events是内核子系统，我们平时说的perf是指这个大的概念 perf_event是数据结构 event是数据源，包括硬件数据源、软件数据源、kprobe、tracepoint等 perf_events子系统 perf 这个就是上章节介绍的perf基础使用里面的各种命令，相当于这个子系统的前端。 perf_event_open perf_event_open()是系统调用，前端perf命令发出以后，走这个系统调用，连接前端和后端的桥梁。 perf_event_open对系统中打开的event分配一个对应的perf_event数据结构，所有对event的操作都是围绕perf_event展开的。 perf_event_open()系统调用返回一个文件描述符。 event 先讲这个，再讲perf_event可能会好理解一点 event就是我们要采集的数据源，比如CPU分支预测失败的硬件数据，或者page-fault的软件数据，又或者是block_getrq()类的tracepoint。 perf stat -e xxx;这个xxx就是接的数据源，我们的采集对象。 perf_event数据结构 perf采样拿到的event最终会放到perf_event数据结构里面，起存储作用。 perf_event的重要成员 struct perf_event_attr; struct perf_event_context; struct pmu; 数据传输 perf stat和perf record的数据传输是不一样的，传输对象和手段都不一样。stat走的read，record走的mmap。&#xA;perf_read：计数事件是用于对发生的事件总数进行计数的事件。通常，计数事件结果是通过 read（） 系统调用读取收集的 perf_mmap：采样事件定期将测量值写入缓冲区，然后可以通过mmap访问该缓冲区。 </description>
+    </item>
     <item>
       <title>perf基础使用</title>
       <link>https://pxp531.github.io/posts/perf%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/</link>
