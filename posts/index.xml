@@ -6,8 +6,15 @@
     <description>Recent content in Posts on pxxp</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 03 Sep 2024 21:09:59 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 03 Sep 2024 21:50:24 +0800</lastBuildDate>
     <atom:link href="https://pxp531.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pytorch基础1</title>
+      <link>https://pxp531.github.io/posts/pytorch%E5%9F%BA%E7%A1%801/</link>
+      <pubDate>Tue, 03 Sep 2024 21:50:24 +0800</pubDate>
+      <guid>https://pxp531.github.io/posts/pytorch%E5%9F%BA%E7%A1%801/</guid>
+      <description>| 为什么学它？之前只会TensorFlow，torch现在用的更多，有时间了解一下，顺便记录一下。&#xA;基础1-Tensor 定义 在pytorch里面，模型的输入输出以及参数都用tensor表示。 tensor和numpy里面的ndarray很像，且它们底层是共享的，需要注意。numpy也能写神经网络，tensor的优势是什么呢？可以用GPU等异构计算加速。 tensor可以自动求导，这个在深度学习里面很关键，深度学习最终就是要找到一堆合适的参数去最小化误差，找参数的这个过程用的是梯度下降，就需要求参数的导数，tensor可以自动求导就很方便。 使用 导包 import torch 初始化 初始化有很多种方式，比如说数据直接转换成tensor、从numpy的数组转换成tensor等&#xA;数据直接转换成tensor：用torch.tensor()包一层&#xA;data = [[1,2], [3,4]] x_data = torch.tensor(data) numpy数组转成tensor：torch.from_numpy()包一层&#xA;np_arr = np.array(data) x_np = torch.from_numpy(np_arr) 从其他tensor转换：形状不变，值变化&#xA;torch.ones_like() torch.rand_like() 随机数or常量：随机初始化一个tensor&#xA;torch.rand() -&amp;gt; 里面传一个元组 torch.ones() torch.zeros() tensor属性 shape&#xA;datatype&#xA;device：在cpu or gpu上&#xA;创建的时候默认是在CPU上，需要显示的移动到GPU上。tensor.to(&amp;ldquo;cuda&amp;rdquo;) tensor操作 索引 &amp;amp; 切片&#xA;tensor = torch.ones(4, 4) print(tensor[0]) print(tensor[:,0]) print(tensor[...,-1]) tensor[:,1] = 0 合并&#xA;神经网络里面会有网络之间的合并，就是tensor的合并，比如多头注意力机制最后每个头会进行一个合并，使用的是cat 参数dim是指定按照行 or 列来进行合并 算术运算&#xA;最多的应该是element-wise以及矩阵乘法了&#xA;t1.matmul(t2) -&amp;gt; 矩阵乘法 t1.mul(t2) -&amp;gt; element-wise乘法 聚合运算</description>
+    </item>
     <item>
       <title>Perf原理01</title>
       <link>https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8601/</link>
