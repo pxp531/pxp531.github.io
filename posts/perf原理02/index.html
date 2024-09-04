@@ -1,0 +1,414 @@
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html
+  class="not-ready lg:text-base"
+  style="--bg: #faf8f1"
+  lang="zh-cn"
+  dir="ltr"
+>
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no"
+  />
+
+  
+  <title>Perf原理02 - pxxp</title>
+
+  
+  <meta name="theme-color" />
+
+  
+  
+  
+  
+  <meta name="description" content="| 前面讲了perf子系统的大概结构
+perf功能 事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。 原理 链路 perf -&gt; perf_event_open() -&gt; perf_events -&gt; PMU
+perf是前端工具 perf_event_open()是系统调用，建立连接 perf_events 内核子系统 PMU CPU中的性能监测单元 perf工具 位于用户态的性能分析工具 原理是基于内核perf_events子系统和CPU的PMU功能 perf_events子系统 perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。 perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。 PMU 特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。 perf_event_open() 连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值 流程 用户态的perf通过系统调用sys_perf_event_open陷入到内核中； 内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加； PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样； 内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。 思考 目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高
+perf怎么做的
+perf是用的采样 设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。 函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。 " />
+  <meta name="author" content="pxxp" />
+  
+
+  
+  
+  
+  
+  
+  
+  <link rel="preload stylesheet" as="style" href="https://pxp531.github.io/main.min.css" />
+
+  
+  
+  
+  
+  
+  <link rel="preload" as="image" href="https://pxp531.github.io/theme.png" />
+
+  
+  
+  
+  
+  
+
+  
+  
+  <link rel="preload" as="image" href="https://pxp531.github.io/github.svg" />
+  
+  <link rel="preload" as="image" href="https://pxp531.github.io/rss.svg" />
+  
+  
+
+  
+  
+  <script
+    defer
+    src="https://pxp531.github.io/highlight.min.js"
+    onload="hljs.initHighlightingOnLoad();"
+  ></script>
+  
+
+  
+  
+  
+
+  
+  <link
+    rel="icon"
+    href="https://pxp531.github.io/favicon.ico"
+  />
+  <link
+    rel="apple-touch-icon"
+    href="https://pxp531.github.io/apple-touch-icon.png"
+  />
+
+  
+  <meta name="generator" content="Hugo 0.133.0">
+
+  
+  
+  
+  
+  
+
+
+  
+  
+  <meta itemprop="name" content="Perf原理02">
+  <meta itemprop="description" content="| 前面讲了perf子系统的大概结构
+perf功能 事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。 原理 链路 perf -&gt; perf_event_open() -&gt; perf_events -&gt; PMU
+perf是前端工具 perf_event_open()是系统调用，建立连接 perf_events 内核子系统 PMU CPU中的性能监测单元 perf工具 位于用户态的性能分析工具 原理是基于内核perf_events子系统和CPU的PMU功能 perf_events子系统 perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。 perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。 PMU 特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。 perf_event_open() 连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值 流程 用户态的perf通过系统调用sys_perf_event_open陷入到内核中； 内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加； PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样； 内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。 思考 目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高
+perf怎么做的
+perf是用的采样 设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。 函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。 ">
+  <meta itemprop="datePublished" content="2024-09-04T21:30:46+08:00">
+  <meta itemprop="dateModified" content="2024-09-04T21:30:46+08:00">
+  <meta itemprop="wordCount" content="43">
+  
+  <meta property="og:url" content="https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8602/">
+  <meta property="og:site_name" content="pxxp">
+  <meta property="og:title" content="Perf原理02">
+  <meta property="og:description" content="| 前面讲了perf子系统的大概结构
+perf功能 事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。 原理 链路 perf -&gt; perf_event_open() -&gt; perf_events -&gt; PMU
+perf是前端工具 perf_event_open()是系统调用，建立连接 perf_events 内核子系统 PMU CPU中的性能监测单元 perf工具 位于用户态的性能分析工具 原理是基于内核perf_events子系统和CPU的PMU功能 perf_events子系统 perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。 perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。 PMU 特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。 perf_event_open() 连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值 流程 用户态的perf通过系统调用sys_perf_event_open陷入到内核中； 内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加； PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样； 内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。 思考 目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高
+perf怎么做的
+perf是用的采样 设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。 函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。 ">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-04T21:30:46+08:00">
+    <meta property="article:modified_time" content="2024-09-04T21:30:46+08:00">
+
+  
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Perf原理02">
+  <meta name="twitter:description" content="| 前面讲了perf子系统的大概结构
+perf功能 事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。 原理 链路 perf -&gt; perf_event_open() -&gt; perf_events -&gt; PMU
+perf是前端工具 perf_event_open()是系统调用，建立连接 perf_events 内核子系统 PMU CPU中的性能监测单元 perf工具 位于用户态的性能分析工具 原理是基于内核perf_events子系统和CPU的PMU功能 perf_events子系统 perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。 perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。 PMU 特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。 perf_event_open() 连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值 流程 用户态的perf通过系统调用sys_perf_event_open陷入到内核中； 内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加； PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样； 内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。 思考 目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高
+perf怎么做的
+perf是用的采样 设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。 函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。 ">
+
+  
+  
+
+  
+  <link rel="canonical" href="https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8602/" />
+  
+  
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <header class="mx-auto flex h-[4.5rem] max-w-[--w] px-8 lg:justify-center">
+  <div class="relative z-50 ltr:mr-auto rtl:ml-auto flex items-center">
+    <a class="-translate-y-[1px] text-2xl font-medium" href="https://pxp531.github.io/"
+      >pxxp</a
+    >
+    <div
+      class="btn-dark text-[0] ltr:ml-4 rtl:mr-4 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"
+      role="button"
+      aria-label="Dark"
+    ></div>
+  </div>
+
+  <div
+    class="btn-menu relative z-50 ltr:-mr-8 rtl:-ml-8 flex h-[4.5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+    role="button"
+    aria-label="Menu"
+  ></div>
+
+  
+
+  <script>
+    
+    const htmlClass = document.documentElement.classList;
+    setTimeout(() => {
+      htmlClass.remove('not-ready');
+    }, 10);
+
+    
+    const btnMenu = document.querySelector('.btn-menu');
+    btnMenu.addEventListener('click', () => {
+      htmlClass.toggle('open');
+    });
+
+    
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    const lightBg = '#faf8f1'.replace(/"/g, '');
+    const setDark = (isDark) => {
+      metaTheme.setAttribute('content', isDark ? '#000' : lightBg);
+      htmlClass[isDark ? 'add' : 'remove']('dark');
+      localStorage.setItem('dark', isDark);
+    };
+
+    
+    const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    if (htmlClass.contains('dark')) {
+      setDark(true);
+    } else {
+      const darkVal = localStorage.getItem('dark');
+      setDark(darkVal ? darkVal === 'true' : darkScheme.matches);
+    }
+
+    
+    darkScheme.addEventListener('change', (event) => {
+      setDark(event.matches);
+    });
+
+    
+    const btnDark = document.querySelector('.btn-dark');
+    btnDark.addEventListener('click', () => {
+      setDark(localStorage.getItem('dark') !== 'true');
+    });
+  </script>
+
+  <div
+    class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"
+  >
+    
+    
+
+    
+    <nav
+      class="mt-12 flex justify-center space-x-10 rtl:space-x-reverse dark:invert ltr:lg:ml-14 rtl:lg:mr-14 lg:mt-0 lg:items-center"
+    >
+      
+      <a
+        class="h-7 w-7 text-[0] [background:var(--url)_center_center/cover_no-repeat] lg:h-6 lg:w-6"
+        style="--url: url(./github.svg)"
+        href="https://github.com/pxp531"
+        target="_blank"
+        rel="me"
+      >
+        github
+      </a>
+      
+      <a
+        class="h-7 w-7 text-[0] [background:var(--url)_center_center/cover_no-repeat] lg:h-6 lg:w-6"
+        style="--url: url(./rss.svg)"
+        href="https://pxp531.github.io/index.xml"
+        target="_blank"
+        rel="alternate"
+      >
+        rss
+      </a>
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <main
+      class="prose prose-neutral relative mx-auto min-h-[calc(100%-9rem)] max-w-[--w] px-8 pb-16 pt-14 dark:prose-invert"
+    >
+      
+
+<article>
+  <header class="mb-14">
+    <h1 class="!my-0 pb-2.5">Perf原理02</h1>
+
+    
+    <div class="text-xs antialiased opacity-60">
+      
+      <time>Sep 4, 2024</time>
+      
+      
+      
+      
+    </div>
+    
+  </header>
+
+  <section><p>| 前面讲了perf子系统的大概结构</p>
+<h2 id="perf功能">perf功能</h2>
+<ul>
+<li>事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。</li>
+</ul>
+<h3 id="原理">原理</h3>
+<h4 id="链路">链路</h4>
+<ul>
+<li>
+<p>perf -&gt; perf_event_open() -&gt; perf_events -&gt; PMU</p>
+<ul>
+<li>perf是前端工具</li>
+<li>perf_event_open()是系统调用，建立连接</li>
+<li>perf_events 内核子系统</li>
+<li>PMU CPU中的性能监测单元</li>
+</ul>
+</li>
+</ul>
+<h5 id="perf工具">perf工具</h5>
+<ul>
+<li>位于用户态的性能分析工具</li>
+<li>原理是基于内核perf_events子系统和CPU的PMU功能</li>
+</ul>
+<h5 id="perf_events子系统">perf_events子系统</h5>
+<ul>
+<li>perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。</li>
+<li>perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。</li>
+</ul>
+<h5 id="pmu">PMU</h5>
+<ul>
+<li>特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。</li>
+</ul>
+<h5 id="perf_event_open">perf_event_open()</h5>
+<ul>
+<li>连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值</li>
+</ul>
+<h4 id="流程">流程</h4>
+<ol>
+<li>用户态的perf通过系统调用sys_perf_event_open陷入到内核中；</li>
+<li>内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加；</li>
+<li>PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样；</li>
+<li>内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。</li>
+</ol>
+<h4 id="思考">思考</h4>
+<ul>
+<li>
+<p>目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高</p>
+</li>
+<li>
+<p>perf怎么做的</p>
+<ul>
+<li>perf是用的采样</li>
+<li>设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。</li>
+<li>函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。</li>
+</ul>
+</li>
+</ul>
+</section>
+
+  
+  
+
+  
+  
+  
+  
+  <nav
+    class="mt-24 flex overflow-hidden rounded-xl bg-black/[3%] text-lg !leading-[1.2] *:flex *:w-1/2 *:items-center *:p-5 *:font-medium *:no-underline dark:bg-white/[8%] [&>*:hover]:bg-black/[2%] dark:[&>*:hover]:bg-white/[3%]"
+  >
+    
+    
+    <a class="ltr:ml-auto rtl:mr-auto justify-end pl-3" href="https://pxp531.github.io/posts/pytorch%E5%9F%BA%E7%A1%801/"
+      ><span>Pytorch基础1</span><span class="ltr:ml-1.5 rtl:mr-1.5">→</span></a
+    >
+    
+  </nav>
+  
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+</article>
+
+
+    </main>
+
+    <footer
+  class="mx-auto flex h-[4.5rem] max-w-[--w] items-center px-8 text-xs uppercase tracking-wider opacity-60"
+>
+  <div class="mr-auto">
+  
+    &copy; 2024
+    <a class="link" href="https://pxp531.github.io/">pxxp</a>
+  
+  </div>
+  <a class="link mx-6" href="https://gohugo.io/" rel="noopener" target="_blank"
+    >powered by hugo️️</a
+  >️
+  <a
+    class="link"
+    href="https://github.com/nanxiaobei/hugo-paper"
+    rel="noopener"
+    target="_blank"
+    >hugo-paper</a
+  >
+</footer>
+
+  </body>
+</html>

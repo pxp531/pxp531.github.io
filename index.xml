@@ -6,8 +6,15 @@
     <description>Recent content on pxxp</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 03 Sep 2024 21:50:24 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 04 Sep 2024 21:30:46 +0800</lastBuildDate>
     <atom:link href="https://pxp531.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Perf原理02</title>
+      <link>https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8602/</link>
+      <pubDate>Wed, 04 Sep 2024 21:30:46 +0800</pubDate>
+      <guid>https://pxp531.github.io/posts/perf%E5%8E%9F%E7%90%8602/</guid>
+      <description>| 前面讲了perf子系统的大概结构&#xA;perf功能 事件采集、采样分析、性能分析、火焰图、跟踪等多种功能。 原理 链路 perf -&amp;gt; perf_event_open() -&amp;gt; perf_events -&amp;gt; PMU&#xA;perf是前端工具 perf_event_open()是系统调用，建立连接 perf_events 内核子系统 PMU CPU中的性能监测单元 perf工具 位于用户态的性能分析工具 原理是基于内核perf_events子系统和CPU的PMU功能 perf_events子系统 perf_events子系统允许用户访问CPU的性能监测单元PMU，这些单元用来测量和记录各种硬件性能事件。现在也包括各种软件事件和静态追踪点灯多种类型的事件。 perf_events提供了一组接口，使得用户可以配置和启动性能计数器的采样或者计数功能，并获取性能数据。 PMU 特殊的硬件单元，用于测量和记录相关事件，比如指令执行、缓存命中、缓存不命中等。 perf_event_open() 连接用户态与内核态的，会返回对应的fd。可以打开这个fd来读取，也可以mmap这个fd来进行读取采样值 流程 用户态的perf通过系统调用sys_perf_event_open陷入到内核中； 内核根据perf提供的信息在PMU上初始化一个硬件性能计数器(PMC)，PMC随着指定的事件发生而自动累加； PMC溢出时，PMU会触发一个PMI中断，内核在PMI中断的处理函数中保存PMC的计数值，触发中断时的指令地址，当前时间戳，当前进程的PID、TID、comm等信息，这叫做一次采样； 内核会将收集到的信息放入用于跟用户通信的Ring Buffer, 用户空间里的perf程序采用mmap机制从ring buffer中读入采样，并对其解析。 思考 目标：设计一个程序来分析程序中各个函数消耗CPU的时间；要求：侵入小，性能高&#xA;perf怎么做的&#xA;perf是用的采样 设置一个定时器，定时器触发的时候，查看当前进程正在执行的函数。 函数特别多的话，perf采用红黑树，每个函数是一个节点，按照统计次数排序。那么最右边的节点就是CPU使用率最高的函数。 </description>
+    </item>
     <item>
       <title>Pytorch基础1</title>
       <link>https://pxp531.github.io/posts/pytorch%E5%9F%BA%E7%A1%801/</link>
